@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: mementox-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    rootDir: server
+    envVars:
+      - key: MONGO_URL
+        value: mongodb+srv://tanya522354:fRiTix33aFqxX2Ne@cluster0.rfnq2.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - key: JWT_SECRET
+        value: hellohiii
+      - key: PORT
+        value: 3001
