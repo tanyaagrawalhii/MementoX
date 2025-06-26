@@ -1,39 +1,54 @@
-import React from "react";
-import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
-import HomePage from "scenes/homePage";
-import LoginPage from "scenes/loginPage";
-import ProfilePage from "scenes/profilePage";
-import { useMemo } from "react";
-import { useSelector } from "react-redux";
-import { CssBaseline, ThemeProvider } from "@mui/material";
-import { createTheme } from "@mui/material/styles";
-import { themeSettings } from "./theme";
+// client/src/scenes/loginPage/index.jsx
+import React, { useState } from "react";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { setLogin } from "../../state"; // assuming this sets token/user in Redux
+import { useNavigate } from "react-router-dom";
 
-function App() {
-  const mode = useSelector((state) => state.mode);
-  const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
-  const isAuth = Boolean(useSelector((state) => state.token));
+const baseUrl = process.env.REACT_APP_API_URL;
+
+const LoginPage = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${baseUrl}/auth/login`, {
+        email,
+        password,
+      });
+
+      const { user, token } = response.data;
+      dispatch(setLogin({ user, token }));
+      navigate("/home");
+    } catch (err) {
+      console.error("Login failed", err.response?.data || err.message);
+    }
+  };
 
   return (
-    <div className="app">
-      <BrowserRouter>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <Routes>
-            <Route path="/" element={<LoginPage />} />
-            <Route
-              path="/home"
-              element={isAuth ? <HomePage /> : <Navigate to="/" />}
-            />
-            <Route
-              path="/profile/:userId"
-              element={isAuth ? <ProfilePage /> : <Navigate to="/" />}
-            />
-          </Routes>
-        </ThemeProvider>
-      </BrowserRouter>
-    </div>
+    <form onSubmit={handleLogin}>
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+      />
+      <button type="submit">Login</button>
+    </form>
   );
-}
+};
 
-export default App;
+export default LoginPage;
